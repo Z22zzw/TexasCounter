@@ -9,7 +9,7 @@ export function add(a: Decimal.Value, b: Decimal.Value): Decimal {
 }
 
 export function sum(vals: Decimal.Value[]): Decimal {
-  return vals.reduce((acc, v) => acc.plus(v), new Decimal(0));
+  return vals.reduce<Decimal>((acc, v) => acc.plus(v), new Decimal(0));
 }
 
 export function divide(a: Decimal.Value, b: Decimal.Value): Decimal {
