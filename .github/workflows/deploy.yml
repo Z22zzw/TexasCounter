@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKER_IMAGE: texas-counter-server
-  DEPLOY_HOST: 49.235.100.186
+  DEPLOY_HOST: 1.14.183.170
   DEPLOY_USER: root
   DEPLOY_PATH: /opt/texas-counter
 
@@ -37,7 +37,7 @@ jobs:
           docker save ${{ env.DOCKER_IMAGE }}:latest | gzip > /tmp/texas-counter.tar.gz
 
       - name: Copy image to server
-        uses: appleboy/scp-action@v0
+        uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ env.DEPLOY_HOST }}
           username: ${{ env.DEPLOY_USER }}
