@@ -1,0 +1,60 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: texas-counter-server
+  DEPLOY_HOST: 49.235.100.186
+  DEPLOY_USER: root
+  DEPLOY_PATH: /opt/texas-counter
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run tests
+        working-directory: server
+        run: |
+          npm ci
+          npm run test
+
+      - name: Build Docker image
+        working-directory: server
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }}:latest .
+          docker save ${{ env.DOCKER_IMAGE }}:latest | gzip > /tmp/texas-counter.tar.gz
+
+      - name: Copy image to server
+        uses: appleboy/scp-action@v0
+        with:
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: /tmp/texas-counter.tar.gz
+          target: /tmp/
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.DEPLOY_HOST }}
+          username: ${{ env.DEPLOY_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ env.DEPLOY_PATH }}
+            docker load -i /tmp/texas-counter.tar.gz
+            docker compose down
+            docker compose up -d
+            docker image prune -f
+            rm -f /tmp/texas-counter.tar.gz
