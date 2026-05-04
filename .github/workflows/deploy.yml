@@ -32,11 +32,14 @@ jobs:
           npm ci
           npm run test
 
+      # Image tarball must live under $GITHUB_WORKSPACE: appleboy/scp-action runs in Docker and only mounts the workspace (not host /tmp).
       - name: Build Docker image
         working-directory: server
         run: |
           docker build -t ${{ env.DOCKER_IMAGE }}:latest .
-          docker save ${{ env.DOCKER_IMAGE }}:latest | gzip > /tmp/texas-counter.tar.gz
+          mkdir -p "${GITHUB_WORKSPACE}/artifacts"
+          docker save ${{ env.DOCKER_IMAGE }}:latest | gzip > "${GITHUB_WORKSPACE}/artifacts/texas-counter.tar.gz"
+          ls -lh "${GITHUB_WORKSPACE}/artifacts/texas-counter.tar.gz"
 
       - name: Copy image to server
         uses: appleboy/scp-action@v0.1.0
@@ -44,7 +47,7 @@ jobs:
           host: ${{ env.DEPLOY_HOST }}
           username: ${{ env.DEPLOY_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: /tmp/texas-counter.tar.gz
+          source: artifacts/texas-counter.tar.gz
           target: /tmp/
 
       - name: Deploy on server
