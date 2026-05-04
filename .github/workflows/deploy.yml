@@ -20,7 +20,7 @@ on:
 env:
   DOCKER_IMAGE: texas-counter-server
   DEPLOY_HOST: 1.14.183.170
-  DEPLOY_USER: root
+  DEPLOY_USER: deployer
   DEPLOY_PATH: /opt/texas-counter
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
