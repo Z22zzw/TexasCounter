@@ -17,6 +17,9 @@ services:
 
   server:
     image: texas-counter-server:latest
+    build:
+      context: ./server
+      dockerfile: Dockerfile
     container_name: texas-counter-api
     restart: unless-stopped
     expose:

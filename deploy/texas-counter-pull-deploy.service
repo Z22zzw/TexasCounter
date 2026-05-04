@@ -1,0 +1,9 @@
+[Unit]
+Description=Texas counter pull-based deploy (git pull + docker compose)
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/texas-counter
+ExecStart=/opt/texas-counter/scripts/deploy-pull.sh

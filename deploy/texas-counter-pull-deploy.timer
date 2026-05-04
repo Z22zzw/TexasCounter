@@ -1,0 +1,10 @@
+[Unit]
+Description=Run texas-counter deploy-pull periodically
+
+[Timer]
+# 每 5 分钟检查一次（可按需改为 daily 或 OnBootSec）
+OnCalendar=*-*-* *:0/5:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,76 @@
+# 生产部署改为「服务器拉取式」：见 scripts/deploy-pull.sh 与 deploy/texas-counter-pull-deploy.* 
+# 本仓库 CI/CD 不从 GitHub SSH 登录生产机（避免境外 IP / 安全风控）。
+# 仓库 Secrets：无需 SSH_PRIVATE_KEY；若日后增加 ghcr.io 推送可再配置 REGISTRY 相关 Secret。
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  backend-check:
+    name: Backend smoke check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install, test, build
+        working-directory: server
+        run: |
+          npm ci
+          npm run test
+          npm run build
+
+  compose-validate:
+    name: Docker compose validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder .env for compose validation
+        run: cp .env.template .env
+
+      - name: Validate compose file
+        run: docker compose -f docker-compose.yml config
+
+  compose-smoke:
+    name: Docker compose smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare .env
+        run: |
+          cp .env.template .env
+          echo "JWT_SECRET=ci-smoke-secret" >> .env
+
+      - name: Build and start services
+        run: |
+          docker compose -f docker-compose.yml up -d --build
+          sleep 20
+
+      - name: Health check
+        run: curl -fsS http://127.0.0.1/api/health
+
+      - name: Stop services
+        if: always()
+        run: docker compose -f docker-compose.yml down -v

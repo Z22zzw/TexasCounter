@@ -1,0 +1,30 @@
+# 合并到 main 后仅做 compose 编排校验，不连接生产机。
+# 发布：在腾讯云上对克隆下来的仓库执行 scripts/deploy-pull.sh（或由 systemd timer 定时拉取）。
+
+name: CD
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: cd-main-smoke
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  compose-smoke:
+    name: Compose config smoke (main)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder .env for compose validation
+        run: cp .env.template .env
+
+      - name: Validate docker compose
+        run: docker compose -f docker-compose.yml config
