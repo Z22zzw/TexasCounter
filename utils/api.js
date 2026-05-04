@@ -1,4 +1,4 @@
-const BASE_URL = "https://api.example.com"; // configure per environment
+const BASE_URL = "http://1.14.183.170:3000"; // configure per environment
 
 let _token = "";
 

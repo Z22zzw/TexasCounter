@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>德州记账</title>
+    <style>
+      :root { font-family: system-ui, sans-serif; }
+      body { max-width: 40rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+      code { background: #f3f4f6; padding: 0.2em 0.4em; border-radius: 4px; }
+      .ok { color: #15803d; }
+      .err { color: #b91c1c; }
+    </style>
+  </head>
+  <body>
+    <h1>德州记账服务</h1>
+    <p>此为 H5/公网访问占位页。小程序请配置合法 request 域名指向本服务器（需 HTTPS）。</p>
+    <p>接口前缀：<code>/api</code>（经 Nginx 反代到 Node）。</p>
+    <p id="health">正在检测 <code>/api/health</code> …</p>
+    <script>
+      fetch("/api/health")
+        .then((r) => r.json())
+        .then((j) => {
+          document.getElementById("health").innerHTML =
+            '<span class="ok">后端正常：</span><pre>' + JSON.stringify(j, null, 2) + "</pre>";
+        })
+        .catch((e) => {
+          document.getElementById("health").innerHTML =
+            '<span class="err">无法连接 API：</span> ' + String(e);
+        });
+    </script>
+  </body>
+</html>

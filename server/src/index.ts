@@ -14,6 +14,11 @@ export async function buildServer() {
   await app.register(handRoutes);
   await app.register(leaderboardRoutes);
 
+  app.get("/api/health", async () => ({
+    ok: true,
+    time: new Date().toISOString(),
+  }));
+
   await app.ready();
   return app;
 }
